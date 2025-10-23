@@ -5,7 +5,13 @@ type config struct {
 	previousUrl		string
 }
 
-type LocationArea struct {
-    ID   			int    `json:"id"`
+type LocationAreas struct {
+	Results			[]Area	`json:"results"`
+	nextUrl			string	`json:"next"`
+	previousUrl		string	`json:"previous"`
+}
+
+type Area struct {
+	ID   			int    `json:"id"`
     Name 			string `json:"name"`
 }
