@@ -32,8 +32,13 @@ func initCommands() {
 		},
 		"map": {
 			name:			"map",
-			description:	"Displays the 20 names of location areas, call again to display more",
+			description:	"Displays 20 names of location areas, call again to go forward",
 			callback:		commandMap,
+		},
+		"mapb": {
+			name:			"mapb",
+			description:	"Displays 20 previous names of location areas, call again to go back",
+			callback:		commandMapb,
 		},
 	}
 }
@@ -61,14 +66,20 @@ func commandHelp(conf *config) error {
 }
 
 func commandMap(conf *config) error {
+	// get url
 	url := conf.NextUrl
+	if url == "" {
+		fmt.Println("No more pages forward, please use command 'mapb'")
+		return nil
+	}
+
 	res, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Encountered an error while trying to get url:", err)
 		return err
 	}
 	defer res.Body.Close()
-
+	// body
 	body, err := io.ReadAll(res.Body)
 	if res.StatusCode > 299 {
 		fmt.Println("Bad status code:", res.StatusCode)
@@ -78,28 +89,82 @@ func commandMap(conf *config) error {
 		fmt.Println("Encountered an error while retrieving body:", err)
 		return err
 	}
-
+	// unmarshal the data
 	mLocation := LocationAreas{}
 	err = json.Unmarshal(body, &mLocation)
 	if err != nil {
 		fmt.Println("Encountered an error while unmarshalling the data:", err)
 		return err
 	}
-	fmt.Println(mLocation)
-
-	areas := mLocation.Results
-	for i := 0; i < len(areas); i++ {
-		fmt.Println(areas[i].Name)
-	}
-
-	if mLocation.NextUrl == nil {
-		conf.NextUrl = "https://pokeapi.co/api/v2/location-area/?offset=20&limit=20"
+	// print locations
+    for _, a := range mLocation.Results {
+        fmt.Println(a.Name)
+    }
+	// set new previous and next URLs
+	if mLocation.NextUrl == "" {
+		conf.NextUrl = ""
+		fmt.Println("No more pages forward, please use command 'mapb'")
 	} else {
 		conf.NextUrl = mLocation.NextUrl
 	}
-	conf.PreviousUrl = *mLocation.PreviousUrl
+	if mLocation.PreviousUrl != nil {
+		conf.PreviousUrl = *mLocation.PreviousUrl
+	} else {
+		conf.PreviousUrl = ""
+	}
 	return nil
 }
+
+func commandMapb(conf *config) error {
+    // get url
+    url := conf.PreviousUrl
+    if url == "" {
+        fmt.Println("No more pages backward, please use command 'map'")
+        return nil
+    }
+
+    res, err := http.Get(url)
+    if err != nil {
+        fmt.Println("Encountered an error while trying to get url:", err)
+        return err
+    }
+    defer res.Body.Close()
+
+    // read body
+    body, err := io.ReadAll(res.Body)
+    if err != nil {
+        fmt.Println("Encountered an error while retrieving body:", err)
+        return err
+    }
+    if res.StatusCode < 200 || res.StatusCode > 299 {
+        return fmt.Errorf("bad status %d: %s", res.StatusCode, string(body))
+    }
+
+    // unmarshal the data
+    mLocation := LocationAreas{}
+    if err := json.Unmarshal(body, &mLocation); err != nil {
+        fmt.Println("Encountered an error while unmarshalling the data:", err)
+        return err
+    }
+
+    // print locations
+    for _, a := range mLocation.Results {
+        fmt.Println(a.Name)
+    }
+
+    // set new previous and next URLs
+    conf.NextUrl = mLocation.NextUrl
+
+    if mLocation.PreviousUrl == nil {
+        conf.PreviousUrl = ""
+        fmt.Println("No more pages backward, please use command 'map'")
+    } else {
+        conf.PreviousUrl = *mLocation.PreviousUrl
+    }
+
+    return nil
+}
+
 
 func main() {
 	fmt.Println("Welcome to the Pokedex!")
