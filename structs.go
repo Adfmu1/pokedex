@@ -6,6 +6,6 @@ type config struct {
 }
 
 type LocationArea struct {
-	id				'json:"id"'
-	name			'json:"name"'
+    ID   			int    `json:"id"`
+    Name 			string `json:"name"`
 }
