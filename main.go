@@ -172,7 +172,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var conf config
-	conf.NextUrl= "https://pokeapi.co/api/v2/location-area/?offset=20&limit=20"
+	conf.NextUrl= "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
 
 	commandHelp(&conf)
@@ -181,6 +181,7 @@ func main() {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		input := cleanInput(scanner.Text())
+		if len(input) == 0 { continue }
 		command := input[0]
 
 		if i, ok := commands[command]; !(ok) {
