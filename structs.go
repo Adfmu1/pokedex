@@ -1,17 +1,17 @@
 package main
 
 type config struct {
-	nextUrl			string
-	previousUrl		string
+	NextUrl			string
+	PreviousUrl		string
 }
 
 type LocationAreas struct {
 	Results			[]Area	`json:"results"`
-	nextUrl			string	`json:"next"`
-	previousUrl		string	`json:"previous"`
+	NextUrl			string	`json:"next"`
+	PreviousUrl		*string	`json:"previous"`
 }
 
 type Area struct {
-	ID   			int    `json:"id"`
-    Name 			string `json:"name"`
+	Url   			string	`json:"url"`
+    Name 			string	`json:"name"`
 }
