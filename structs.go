@@ -15,3 +15,9 @@ type Area struct {
 	Url   			string	`json:"url"`
     Name 			string	`json:"name"`
 }
+
+type cliCommand struct {
+	name			string
+	description		string
+	callback		func(conf *config) error
+}
