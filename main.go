@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
-	"os"
 	"fmt"
-	)
+	"os"
+)
 
 var commands map[string]cliCommand
 
@@ -14,8 +14,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var conf config
-	conf.NextUrl= "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
-
+	conf.NextUrl = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
 	commandHelp(&conf)
 
@@ -23,7 +22,9 @@ func main() {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		input := cleanInput(scanner.Text())
-		if len(input) == 0 { continue }
+		if len(input) == 0 {
+			continue
+		}
 		command := input[0]
 
 		if i, ok := commands[command]; !(ok) {
@@ -31,7 +32,7 @@ func main() {
 		} else {
 			err := i.callback(&conf)
 			if err != nil {
-				fmt.Println(fmt.Sprintf("Error occured while trying to call %s command: %v", command, err))
+				fmt.Printf("Error occured while trying to call %s command: %v", command, err)
 			}
 		}
 	}
