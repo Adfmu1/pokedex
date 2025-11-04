@@ -15,29 +15,41 @@ type cacheEntry struct {
 	val					[]byte
 }
 
-func (ch *Cache) Add(key string, val []byte) {
-	ch.mu.Lock()
-	defer ch.mu.Unlock()
+func (ca *Cache) Add(key string, val []byte) {
+	ca.mu.Lock()
+	defer ca.mu.Unlock()
 	// create an entry
-	entry := cacheEntry{
+	entry := cacheEntry {
 		createdAt: time.Now(),
 		val: val,
 	}
 	// add en entry
-	ch.entries[key] = entry
+	ca.entries[key] = entry
 }
 
-func (ch *Cache) Get(key string) []byte, bool {
-	ch.mu.Lock()
-	defer ch.mu.Unlock()
+func (ca *Cache) Get(key string) ([]byte, bool) {
+	ca.mu.RLock()
+	defer ca.mu.RUnlock()
 	// check for entry in cache
-	val, found := ch.entries[key]
+	entry, found := ca.entries[key]
 	// error
 	if !found {
 		return nil, found
 	}
 	// found
-	return val, found
+	return entry.val, found
+}
+
+func (ca *Cache) reapLoop(interval int) {
+	ca.mu.Lock()
+	defer ca.mu.Unlock()
+	// delete each entry if it exists for > interval 
+	for _, entry := range ca.entries {
+		if entry.time.Since(entry.createdAt) >= interval * time.Seconds {
+			k, _ := entry
+			delete(ca.entries, k)
+		}
+	}
 }
 
 func main() {
