@@ -41,18 +41,27 @@ func (ca *Cache) Get(key string) ([]byte, bool) {
 }
 
 func (ca *Cache) reapLoop(interval time.Duration) {
-	ca.mu.Lock()
-	defer ca.mu.Unlock()
-	// delete each entry if it exists for > interval 
-	for key, val := range ca.entries {
-		if time.Since(entry.createdAt) >= interval * time.Seconds {
-			delete(ca.entries, key)
+	// ticker to tick after an interval
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	// check if time has passed
+	for range ticker.C {
+		ca.mu.Lock()
+		// delete entry if it exists for > interval 
+		for key, entry := range ca.entries {
+			if time.Since(entry.createdAt) >= interval {
+				delete(ca.entries, key)
+			}
 		}
+		ca.mu.Unlock()
 	}
 }
 
-func main() {
-
-
-
+func NewCache(interval time.Duration) *Cache {
+	c := &Cache{
+		mu:				&sync.RWMutex{},
+		entries:		make(map[string]cacheEntry),
+	}
+	go c.reapLoop(interval)
+	return c
 }
