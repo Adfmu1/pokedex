@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+
+	"github.com/Adfmu1/pokedex/internal/pokecache"
 )
 
 var commands map[string]cliCommand

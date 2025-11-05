@@ -1,27 +1,27 @@
 package pokecache
 
 import (
-	"time"
 	"sync"
+	"time"
 )
 
 type Cache struct {
-	mu					*sync.RWMutex
-	entries				map[string]cacheEntry
+	mu      *sync.RWMutex
+	entries map[string]cacheEntry
 }
 
 type cacheEntry struct {
-	createdAt			time.Time
-	val					[]byte
+	createdAt time.Time
+	val       []byte
 }
 
 func (ca *Cache) Add(key string, val []byte) {
 	ca.mu.Lock()
 	defer ca.mu.Unlock()
 	// create an entry
-	entry := cacheEntry {
+	entry := cacheEntry{
 		createdAt: time.Now(),
-		val: val,
+		val:       val,
 	}
 	// add en entry
 	ca.entries[key] = entry
@@ -47,7 +47,7 @@ func (ca *Cache) reapLoop(interval time.Duration) {
 	// check if time has passed
 	for range ticker.C {
 		ca.mu.Lock()
-		// delete entry if it exists for > interval 
+		// delete entry if it exists for > interval
 		for key, entry := range ca.entries {
 			if time.Since(entry.createdAt) >= interval {
 				delete(ca.entries, key)
@@ -59,8 +59,8 @@ func (ca *Cache) reapLoop(interval time.Duration) {
 
 func NewCache(interval time.Duration) *Cache {
 	c := &Cache{
-		mu:				&sync.RWMutex{},
-		entries:		make(map[string]cacheEntry),
+		mu:      &sync.RWMutex{},
+		entries: make(map[string]cacheEntry),
 	}
 	go c.reapLoop(interval)
 	return c
