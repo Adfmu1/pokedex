@@ -40,14 +40,13 @@ func (ca *Cache) Get(key string) ([]byte, bool) {
 	return entry.val, found
 }
 
-func (ca *Cache) reapLoop(interval int) {
+func (ca *Cache) reapLoop(interval time.Duration) {
 	ca.mu.Lock()
 	defer ca.mu.Unlock()
 	// delete each entry if it exists for > interval 
-	for _, entry := range ca.entries {
-		if entry.time.Since(entry.createdAt) >= interval * time.Seconds {
-			k, _ := entry
-			delete(ca.entries, k)
+	for key, val := range ca.entries {
+		if time.Since(entry.createdAt) >= interval * time.Seconds {
+			delete(ca.entries, key)
 		}
 	}
 }
