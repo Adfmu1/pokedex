@@ -16,6 +16,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var conf config
+	conf.Cache = pokecache.NewCache(5)
 	conf.NextUrl = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
 	commandHelp(&conf)

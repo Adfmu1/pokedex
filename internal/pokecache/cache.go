@@ -57,11 +57,11 @@ func (ca *Cache) reapLoop(interval time.Duration) {
 	}
 }
 
-func NewCache(interval time.Duration) *Cache {
+func NewCache(interval int) *Cache {
 	c := &Cache{
 		mu:      &sync.RWMutex{},
 		entries: make(map[string]cacheEntry),
 	}
-	go c.reapLoop(interval)
+	go c.reapLoop(time.Duration(interval) * time.Second)
 	return c
 }
