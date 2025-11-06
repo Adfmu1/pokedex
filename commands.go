@@ -64,25 +64,31 @@ func commandMap(conf *config) error {
 		return nil
 	}
 
-	res, err := http.Get(url)
-	if err != nil {
-		fmt.Println("Encountered an error while trying to get url:", err)
-		return err
-	}
-	defer res.Body.Close()
-	// body
-	body, err := io.ReadAll(res.Body)
-	if res.StatusCode > 299 {
-		fmt.Println("Bad status code:", res.StatusCode)
-		return err
-	}
-	if err != nil {
-		fmt.Println("Encountered an error while retrieving body:", err)
-		return err
+	// check if data is in cache already
+	data, found := conf.Cache.Get(url)
+	// if not make a request to api
+	if !found {
+		// get api data
+		res, err := http.Get(url)
+		if err != nil {
+			fmt.Println("Encountered an error while trying to get url:", err)
+			return err
+		}
+		defer res.Body.Close()
+		// read body
+		data, err = io.ReadAll(res.Body)
+		if res.StatusCode > 299 {
+			fmt.Println("Bad status code:", res.StatusCode)
+			return err
+		}
+		if err != nil {
+			fmt.Println("Encountered an error while retrieving body:", err)
+			return err
+		}
 	}
 	// unmarshal the data
 	mLocation := LocationAreas{}
-	err = json.Unmarshal(body, &mLocation)
+	err := json.Unmarshal(data, &mLocation)
 	if err != nil {
 		fmt.Println("Encountered an error while unmarshalling the data:", err)
 		return err
@@ -102,6 +108,10 @@ func commandMap(conf *config) error {
 		conf.PreviousUrl = *mLocation.PreviousUrl
 	} else {
 		conf.PreviousUrl = ""
+	}
+	// if data is correct not found in cache save to cache
+	if !found {
+		conf.Cache.Add(url, data)
 	}
 	return nil
 }
