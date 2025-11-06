@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,6 +31,11 @@ func initCommands() {
 			name:        "mapb",
 			description: "Displays 20 previous names of location areas, call again to go back",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Displays list of all the Pokémon located in given location",
+			callback:    commandExplore,
 		},
 	}
 }
@@ -163,6 +169,60 @@ func commandMapb(conf *config) error {
 		conf.PreviousUrl = *mLocation.PreviousUrl
 	}
 	// if data is correct not found in cache save to cache
+	if !found {
+		conf.Cache.Add(url, data)
+	}
+	return nil
+}
+
+func commandExplore(conf *config, location string) error {
+	if len(location) == 0 {
+		return errors.New("No location given")
+	}
+	// create full url
+	const urlStart = "https://pokeapi.co/api/v2/location-area/"
+	url := urlStart + location
+	// check if data in cache
+	data, found := conf.Cache.Get(url)
+	// if not make request to api
+	if !found {
+		// make call to api
+		res, err := http.Get(url)
+		if err != nil {
+			fmt.Println("Encountered an error while trying to get url:", err)
+			return err
+		}
+		defer res.Body.Close()
+		// read body
+		data, err = io.ReadAll(res.Body)
+		if res.StatusCode > 299 {
+			fmt.Println("Bad status code:", res.StatusCode)
+			return err
+		}
+		if err != nil {
+			fmt.Println("Encountered an error while retrieving body:", err)
+			return err
+		}
+	}
+	// create struct just for poke
+	var pokedata struct {
+		PokemonEncounters []struct {
+			Pokemon struct {
+				Name string `json:"name"`
+			} `json:"pokemon"`
+		} `json:"pokemon_encounters"`
+	}
+	// unmarshal the data
+	err := json.Unmarshal(data, &pokedata)
+	if err != nil {
+		fmt.Println("Encountered an error while unmarshalling the data:", err)
+		return err
+	}
+	// print pokemon names
+	for _, encounter := range pokedata.PokemonEncounters {
+		fmt.Println(encounter.Pokemon.Name)
+	}
+	// if not in cache, save
 	if !found {
 		conf.Cache.Add(url, data)
 	}
