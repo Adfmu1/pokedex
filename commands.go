@@ -63,7 +63,6 @@ func commandMap(conf *config) error {
 		fmt.Println("No more pages forward, please use command 'mapb'")
 		return nil
 	}
-
 	// check if data is in cache already
 	data, found := conf.Cache.Get(url)
 	// if not make a request to api
@@ -123,45 +122,49 @@ func commandMapb(conf *config) error {
 		fmt.Println("No more pages backward, please use command 'map'")
 		return nil
 	}
-
-	res, err := http.Get(url)
-	if err != nil {
-		fmt.Println("Encountered an error while trying to get url:", err)
-		return err
+	// check if data is in cache already
+	data, found := conf.Cache.Get(url)
+	// if not make a request to api
+	if !found {
+		// get api data
+		res, err := http.Get(url)
+		if err != nil {
+			fmt.Println("Encountered an error while trying to get url:", err)
+			return err
+		}
+		defer res.Body.Close()
+		// read body
+		data, err = io.ReadAll(res.Body)
+		if res.StatusCode > 299 {
+			fmt.Println("Bad status code:", res.StatusCode)
+			return err
+		}
+		if err != nil {
+			fmt.Println("Encountered an error while retrieving body:", err)
+			return err
+		}
 	}
-	defer res.Body.Close()
-
-	// read body
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("Encountered an error while retrieving body:", err)
-		return err
-	}
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return fmt.Errorf("bad status %d: %s", res.StatusCode, string(body))
-	}
-
 	// unmarshal the data
 	mLocation := LocationAreas{}
-	if err := json.Unmarshal(body, &mLocation); err != nil {
+	if err := json.Unmarshal(data, &mLocation); err != nil {
 		fmt.Println("Encountered an error while unmarshalling the data:", err)
 		return err
 	}
-
 	// print locations
 	for _, a := range mLocation.Results {
 		fmt.Println(a.Name)
 	}
-
 	// set new previous and next URLs
 	conf.NextUrl = mLocation.NextUrl
-
 	if mLocation.PreviousUrl == nil {
 		conf.PreviousUrl = ""
 		fmt.Println("No more pages backward, please use command 'map'")
 	} else {
 		conf.PreviousUrl = *mLocation.PreviousUrl
 	}
-
+	// if data is correct not found in cache save to cache
+	if !found {
+		conf.Cache.Add(url, data)
+	}
 	return nil
 }
