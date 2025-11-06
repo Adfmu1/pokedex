@@ -42,3 +42,22 @@ func TestAddGet(t *testing.T) {
 		})
 	}
 }
+
+func TestReapLoop(t *testing.T) {
+	const baseTime = 1
+	const waitTime = baseTime + 1*time.Second
+	cache := NewCache(baseTime)
+	cache.Add("google.com", []byte("google_data"))
+
+	if _, ok := cache.Get("google.com"); !ok {
+		t.Errorf("expected to find key")
+		return
+	}
+
+	time.Sleep(waitTime)
+
+	if _, ok := cache.Get("google.com"); ok {
+		t.Errorf("expected to not find key")
+		return
+	}
+}
