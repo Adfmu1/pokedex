@@ -48,13 +48,13 @@ func cleanInput(text string) []string {
 	return str
 }
 
-func commandExit(conf *config) error {
+func commandExit(params ...any) error {
 	defer os.Exit(0)
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	return nil
 }
 
-func commandHelp(conf *config) error {
+func commandHelp(params ...any) error {
 	fmt.Println("Usage:")
 	for _, comm := range commands {
 		fmt.Println(comm.name, ":", comm.description)
@@ -62,7 +62,15 @@ func commandHelp(conf *config) error {
 	return nil
 }
 
-func commandMap(conf *config) error {
+func commandMap(params ...any) error {
+	// check if parameter is of *conf type
+	if len(params) != 1 {
+		return errors.New("wrong amount of parameter, should be 1")
+	}
+	if _, ok := params[0].(*config); !ok {
+		return errors.New("wrong type of parameter, should be pointer to config type struct")
+	}
+	conf := params[0].(*config)
 	// get url
 	url := conf.NextUrl
 	if url == "" {
@@ -121,7 +129,15 @@ func commandMap(conf *config) error {
 	return nil
 }
 
-func commandMapb(conf *config) error {
+func commandMapb(params ...any) error {
+	// check if parameter is of *conf type
+	if len(params) != 1 {
+		return errors.New("wrong amount of parameter, should be 1")
+	}
+	if _, ok := params[0].(*config); !ok {
+		return errors.New("wrong type of parameter, should be pointer to config type struct")
+	}
+	conf := params[0].(*config)
 	// get url
 	url := conf.PreviousUrl
 	if url == "" {
@@ -175,9 +191,22 @@ func commandMapb(conf *config) error {
 	return nil
 }
 
-func commandExplore(conf *config, location string) error {
+// should accept *config and a string (location name)
+func commandExplore(params ...any) error {
+	// check if parameter is of *conf type
+	if len(params) != 2 {
+		return errors.New("wrong amount of parameters, should be 2")
+	}
+	if _, ok := params[0].(*config); !ok {
+		return errors.New("wrong type of parameter[0], should be pointer to config type struct")
+	} else if _, ok := params[1].(string); !ok {
+		return errors.New("wrong type of parameter[1], should be string")
+	}
+	conf := params[0].(*config)
+	location := params[1].(string)
+
 	if len(location) == 0 {
-		return errors.New("No location given")
+		return errors.New("no location given")
 	}
 	// create full url
 	const urlStart = "https://pokeapi.co/api/v2/location-area/"
