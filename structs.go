@@ -24,5 +24,5 @@ type Area struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(conf *config) error
+	callback    func(params ...any) error
 }
