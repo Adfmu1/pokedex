@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -36,6 +37,11 @@ func initCommands() {
 			name:        "explore",
 			description: "Displays list of all the Pokémon located in given location",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Throws Pokeball at Pokemon with given name",
+			callback:    commandCatch,
 		},
 	}
 }
@@ -255,5 +261,63 @@ func commandExplore(params ...any) error {
 	if !found {
 		conf.Cache.Add(url, data)
 	}
+	return nil
+}
+
+// should accept a string (pokemon name) and a Pokedex struct
+func commandCatch(params ...any) error {
+	// check if correct number of parameters
+	if len(params) != 2 {
+		return errors.New("wrong number of parameters, should be 2")
+	}
+	// check if correct type of parameter
+	pokemonName, ok := params[0].(string)
+	if !ok {
+		return errors.New("wrong type of parameter, should be string")
+	}
+	pokedex, ok := params[1].(*Pokedex)
+	if !ok {
+		return errors.New("wrong type of parameter, should be pntr to a pokedex struct")
+	}
+	pokemonName = strings.ToLower(pokemonName)
+	// check if pokemon is in pokedex
+	if _, ok := pokedex.Pokemons[pokemonName]; ok {
+		fmt.Printf("Pokemon %s has been already caught", pokemonName)
+		return nil
+	}
+	// get URL
+	url := "https://pokeapi.co/api/v2/pokemon/"
+	fullUrl := url + pokemonName
+	res, err := http.Get(fullUrl)
+	if err != nil {
+		fmt.Println("Encountered an error while trying to get url:", err)
+		return err
+	}
+	defer res.Body.Close()
+	// read body
+	data, err := io.ReadAll(res.Body)
+	if res.StatusCode > 299 {
+		fmt.Println("Bad status code:", res.StatusCode)
+		return err
+	}
+	if err != nil {
+		fmt.Println("Encountered an error while retrieving body:", err)
+		return err
+	}
+	// unmarshal the data
+	pokemon := Pokemon{}
+	err = json.Unmarshal(data, &pokemon)
+	if err != nil {
+		fmt.Println("Encountered an error while unmarshalling the data:", err)
+		return err
+	}
+	// try to catch a pokemon
+	fmt.Printf("Throwing a Pokeball at %s...", pokemonName)
+	if chance := rand.Intn(1000); chance <= pokemon.BaseExp {
+		fmt.Printf("%s escaped!", pokemonName)
+		return nil
+	}
+	fmt.Printf("%s was caught!", pokemonName)
+	pokedex.Pokemons[pokemonName] = pokemon
 	return nil
 }
