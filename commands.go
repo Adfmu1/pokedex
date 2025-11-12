@@ -312,12 +312,12 @@ func commandCatch(params ...any) error {
 		return err
 	}
 	// try to catch a pokemon
-	fmt.Printf("Throwing a Pokeball at %s...", pokemonName)
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
 	if chance := rand.Intn(1000); chance <= pokemon.BaseExp {
-		fmt.Printf("%s escaped!", pokemonName)
+		fmt.Printf("%s escaped!\n", pokemonName)
 		return nil
 	}
-	fmt.Printf("%s was caught!", pokemonName)
-	pokedex.Pokemons[pokemonName] = pokemon
+	fmt.Printf("%s was caught!\n", pokemonName)
+	pokedex.Pokemons[pokemon.Name] = pokemon
 	return nil
 }
