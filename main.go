@@ -16,6 +16,9 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var conf config
+	pokedex := Pokedex{
+		Pokemons: make(map[string]Pokemon),
+	}
 	conf.Cache = pokecache.NewCache(5)
 	conf.NextUrl = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
@@ -35,6 +38,11 @@ func main() {
 		} else {
 			if i.name == "explore" {
 				err := i.callback(&conf, input[1])
+				if err != nil {
+					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
+				}
+			} else if i.name == "catch" {
+				err := i.callback(input[1], &pokedex)
 				if err != nil {
 					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
 				}
