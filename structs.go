@@ -17,11 +17,12 @@ type Pokedex struct {
 }
 
 type Pokemon struct {
-	Name   string     `json:"name"`
-	Height int        `json:"height"`
-	Weight int        `json:"weight"`
-	Stats  []PokeStat `json:"stats"`
-	Types  []PokeType `json:"types"`
+	Name    string     `json:"name"`
+	Height  int        `json:"height"`
+	Weight  int        `json:"weight"`
+	Stats   []PokeStat `json:"stats"`
+	Types   []PokeType `json:"types"`
+	BaseExp int        `json:"base_experience"`
 }
 
 type PokeStat struct {
