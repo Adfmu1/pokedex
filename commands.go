@@ -282,7 +282,7 @@ func commandCatch(params ...any) error {
 	pokemonName = strings.ToLower(pokemonName)
 	// check if pokemon is in pokedex
 	if _, ok := pokedex.Pokemons[pokemonName]; ok {
-		fmt.Printf("Pokemon %s has been already caught", pokemonName)
+		fmt.Printf("Pokemon %s has been already caught\n", pokemonName)
 		return nil
 	}
 	// get URL
@@ -313,7 +313,7 @@ func commandCatch(params ...any) error {
 	}
 	// try to catch a pokemon
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
-	if chance := rand.Intn(1000); chance <= pokemon.BaseExp {
+	if chance := rand.Intn(1000); chance <= pokemon.BaseExp*2 {
 		fmt.Printf("%s escaped!\n", pokemonName)
 		return nil
 	}
