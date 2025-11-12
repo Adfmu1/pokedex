@@ -43,6 +43,11 @@ func initCommands() {
 			description: "Throws Pokeball at Pokemon with given name",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Prints name, height, weight, stats and types of Pokemon (if already caught)",
+			callback:    commandInspect,
+		},
 	}
 }
 
@@ -319,5 +324,41 @@ func commandCatch(params ...any) error {
 	}
 	fmt.Printf("%s was caught!\n", pokemonName)
 	pokedex.Pokemons[pokemon.Name] = pokemon
+	return nil
+}
+
+// should accept a string (pokemon name) and a Pokedex struct
+func commandInspect(params ...any) error {
+	// check if correct number of parameters
+	if len(params) != 2 {
+		return errors.New("wrong number of parameters, should be 2")
+	}
+	// check if correct type of parameter
+	pokemonName, ok := params[0].(string)
+	if !ok {
+		return errors.New("wrong type of parameter, should be string")
+	}
+	pokedex, ok := params[1].(*Pokedex)
+	if !ok {
+		return errors.New("wrong type of parameter, should be pntr to a pokedex struct")
+	}
+	pokemonName = strings.ToLower(pokemonName)
+	// check if pokemon is in pokedex
+	pokemon, ok := pokedex.Pokemons[pokemonName]
+	if !ok {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+	fmt.Printf("Name: %s\n", pokemon.Name)
+	fmt.Printf("Height: %d\n", pokemon.Height)
+	fmt.Printf("Weight: %d\n", pokemon.Weight)
+	fmt.Println("Stats:")
+	for i := 0; i < len(pokemon.Stats); i++ {
+		fmt.Printf("\t-%s: %d\n", pokemon.Stats[i].Stat.Name, pokemon.Stats[i].BaseValue)
+	}
+	fmt.Println("Types:")
+	for i := 0; i < len(pokemon.Types); i++ {
+		fmt.Printf("\t-%s\n", pokemon.Types[i].Type.NamedRes)
+	}
 	return nil
 }
