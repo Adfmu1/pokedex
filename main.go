@@ -41,7 +41,7 @@ func main() {
 				if err != nil {
 					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
 				}
-			} else if i.name == "catch" {
+			} else if i.name == "catch" || i.name == "inspect" {
 				err := i.callback(input[1], &pokedex)
 				if err != nil {
 					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
