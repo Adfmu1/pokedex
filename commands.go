@@ -48,6 +48,11 @@ func initCommands() {
 			description: "Prints name, height, weight, stats and types of Pokemon (if already caught)",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Prints names of all caught Pokemons",
+			callback:    commandPokedex,
+		},
 	}
 }
 
@@ -359,6 +364,28 @@ func commandInspect(params ...any) error {
 	fmt.Println("Types:")
 	for i := 0; i < len(pokemon.Types); i++ {
 		fmt.Printf("\t-%s\n", pokemon.Types[i].Type.NamedRes)
+	}
+	return nil
+}
+
+// should accept type Pokedex
+func commandPokedex(params ...any) error {
+	// check if correct number of parameters
+	if len(params) != 1 {
+		return errors.New("wrong number of parameters, should be 1")
+	}
+	pokedex, ok := params[0].(Pokedex)
+	// check if correct type of parameter
+	if !ok {
+		return errors.New("wrong type of parameter, should be string")
+	}
+	if len(pokedex.Pokemons) == 0 {
+		fmt.Println("Your Pokedex is empty")
+		return nil
+	}
+	fmt.Println("Your Pokedex:")
+	for pokemon, _ := range pokedex.Pokemons {
+		fmt.Printf("\t- %s\n", pokemon)
 	}
 	return nil
 }

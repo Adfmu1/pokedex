@@ -36,17 +36,23 @@ func main() {
 		if i, ok := commands[command]; !(ok) {
 			fmt.Println("Unknown command")
 		} else {
-			if i.name == "explore" {
+			switch i.name {
+			case "explore":
 				err := i.callback(&conf, input[1])
 				if err != nil {
 					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
 				}
-			} else if i.name == "catch" || i.name == "inspect" {
+			case "catch", "inspect":
 				err := i.callback(input[1], &pokedex)
 				if err != nil {
 					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
 				}
-			} else {
+			case "pokedex":
+				err := i.callback(pokedex)
+				if err != nil {
+					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
+				}
+			default:
 				err := i.callback(&conf)
 				if err != nil {
 					fmt.Printf("Error occured while trying to call %s command: %v", command, err)
